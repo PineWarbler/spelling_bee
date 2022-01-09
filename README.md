@@ -9,7 +9,7 @@
 -   Artificial voice prompt supplies proper pronunciation
 
 ## Notes:
-This version of [spelling_bee](/spelling_bee_main.py) contains has been adapted for compiling this program as a standalone executable program using [PyInstaller](https://pyinstaller.readthedocs.io/en/stable/).  The [splash screen](/splash screen 1.0.1.png) and [icon](/bumblebee alpha v. 1.1.ico) are included in this repository also.
+This version of [spelling_bee](/spelling_bee_main.py) contains has been adapted for compiling this program as a standalone executable program using [PyInstaller](https://pyinstaller.readthedocs.io/en/stable/).  The ![splash screen](splash screen 1.0.1.png) and [icon](/bumblebee alpha v. 1.1.ico) are included in this repository also.
 
 ### Explaining the accompanying .CSV files
 This program requires three .csv files to operate: 
