@@ -1,6 +1,5 @@
 # spelling_bee
 ## **spelling_bee** is a full-featured, interactive spelling bee study tool coded in Python 
-Users can choose to study words from various difficulty levels and can use different study strategies.  
 
 
 ## Features:
@@ -14,9 +13,9 @@ This version of [spelling_bee](/spelling_bee_main.py) contains has been adapted 
 
 ### Explaining the accompanying .CSV files
 This program requires three .csv files to operate: 
--   (/words_of_champions_2022.csv) contains all spelling words, divided by columns into unique difficulty levels
--   (/word_stats_2022.csv) contains a list of words missed by the user
--   (/progress_history_2022.csv) contains the index of the most recent word which the user studied (for persistent session memory)
+-   [words_of_champions_2022.csv](/words_of_champions_2022.csv) contains all spelling words, divided by columns into unique difficulty levels
+-   [word_stats_2022.csv](/word_stats_2022.csv) contains a list of words missed by the user
+-   [progress_history_2022.csv](/progress_history_2022.csv) contains the index of the most recent word which the user studied (for persistent session memory)
 
 
 ### Using a different list of spelling words:
