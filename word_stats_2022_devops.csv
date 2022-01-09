@@ -1,0 +1,31 @@
+word_level,word_index,word_missed,wrong_spelling,timestamp_of_mistake_formatted,timestamp_of_mistake
+3,311,saccharide,sachharida,Sun Jan  2 14:45:58 2022,1641152758
+3,312,boulevardier,bouldarv,Sun Jan  2 14:46:04 2022,1641152764
+3,312,boulevardier,bouldevardier,Sun Jan  2 17:06:32 2022,1641161192.2399366
+3,750,obnebulate,obnebulata,Sun Jan  2 17:21:37 2022,1641162097.5323167
+3,189,draegerman,draegermon,Sun Jan  2 17:21:54 2022,1641162114.0794752
+1,750,manacle,manacli,Sun Jan  2 17:23:53 2022,1641162233.5794601
+3,758,bucatini,r,Mon Jan  3 12:11:58 2022,1641229918.7304728
+2,5,scrolls,scralls,Mon Jan  3 13:20:48 2022,1641234048.6287038
+2,6,shimmery,exit(),Mon Jan  3 13:21:17 2022,1641234077.30624
+3,13,mallet,mallat,Mon Jan  3 13:47:13 2022,1641235633.1533973
+3,15,disembodied,disembadied,Mon Jan  3 13:47:24 2022,1641235644.4727745
+3,995,trochee,pr,Mon Jan  3 14:38:51 2022,1641238731.310979
+3,565,kichel,kichal,Mon Jan  3 15:14:24 2022,1641240864.3942666
+2,1071,neuropathy,asdf,Mon Jan  3 19:01:48 2022,1641254508.1816728
+3,54,renal,reanl,Mon Jan  3 19:02:01 2022,1641254521.62496
+2,10,blindfolded,z,Tue Jan  4 10:07:15 2022,1641308835.1803927
+3,1027,habeas corpus,habeascorpa,Tue Jan  4 11:47:54 2022,1641314874.9065843
+3,469,kakapo,kakopo,Tue Jan  4 11:48:48 2022,1641314928.4872432
+2,766,impetus,impetuss,Wed Jan  5 10:53:58 2022,1641398038.804665
+3,766,oxyacetylene,oxyacetalene,Wed Jan  5 10:56:39 2022,1641398199.954157
+3,200,sulcus,aulcas,Wed Jan  5 10:57:19 2022,1641398239.5017352
+3,204,vestigial,vestigiaul,Wed Jan  5 10:57:43 2022,1641398263.3874784
+1,6,jelly,jally,Wed Jan  5 10:58:12 2022,1641398292.2811246
+1,7,slow,slaw,Wed Jan  5 10:58:17 2022,1641398297.9100678
+1,9,cold,coals,Wed Jan  5 10:58:27 2022,1641398307.1271849
+3,1,intentionally,intant,Wed Jan  5 10:59:41 2022,1641398381.2776914
+3,2,cocoon,cocoam,Wed Jan  5 11:00:35 2022,1641398435.0744576
+3,5,ranchero,ranchera,Wed Jan  5 11:00:50 2022,1641398450.4384923
+3,6,intolerance,intolerances,Wed Jan  5 11:00:58 2022,1641398458.7618883
+3,8,pulverized; pulverised,palverised,Wed Jan  5 11:01:11 2022,1641398471.1160123
