@@ -23,7 +23,7 @@ This version of [spelling_bee](docs/) contains has been adapted for compiling th
 The author of this program developed it to use the 2022 Scripts Howard official list "Words of Champions." However, users may want to update the word list in future years.
 	
 1. Find the current list of spelling bee words ("Words of Champions") on the [Scripts Howard website](https://spellingbee.com/).
-2. Insert the words (copying and pasting en masse works well) according to their difficulty levels to the proper columns of the [word list](docs/Words_of_champions_2022)
+2. Insert the words (copying and pasting en masse works well) according to their difficulty levels to the proper columns of the [word list](Words_of_champions_2022)
 3. Remove all asterisks ("*") and non-spelling words; separate alternate pronunciations (put in a single cell) by a semicolon and a space
 	-   e.g. honor; honour
 4. Ensure that the updated .csv file is still named "Words_of_champions_2022.csv" and that it is located in the same folder as The Hive executable
