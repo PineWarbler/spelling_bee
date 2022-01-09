@@ -48,18 +48,11 @@ import time
 
 from get_word_info_functions import *
 
-# def clear_console():
-#     # the below trick copied from: https://stackoverflow.com/questions/517970/how-to-clear-the-interpreter-console
-#     print("\033[H\033[J", end="")
-
-
 def scrub_word_list(word_list):
     # clean up each word spelling...
     newList = [None]*len(word_list) # create empty list
     newList = word_list
     for i in range(len(word_list)):
-        # s = 
-        # newList[i] = unidecode.unidecode(word_list[i])    # remove accents
         newList[i] = newList[i].lower()                      # put in lowercase
         newList[i] = newList[i].replace(' ', '')             # remove spaces
         newList[i] = newList[i].replace('-', '')             # remove hyphens
@@ -136,7 +129,7 @@ def record_left_off_place(filename, difficulty_level, index):
         
 def get_missed_indices(filename):
     '''Returns a numpy array of indices of words misspelled (recent to past) '''
-    data = pd.read_csv(filename, encoding="ISO-8859-1")
+    data = pd.read_csv(filename, encoding="ISO-8859-1") # fancy encoding for the exotic markings sometimes encountered in the official word lists
     d = data.word_index.to_numpy()
     reversed_order = d[::-1]
     return reversed_order
@@ -162,7 +155,7 @@ def censor_sentence(word, sentence):
     if len(word) > 7:
             thresh = (len(word)-3) / len(word) # because three is usually the maximum # letter deviations in a word '-ing'
     else:
-        thresh = 0.65 # this is a good median thresh
+        thresh = 0.65 # this is a good median threshold
 
     closest_matches = get_close_matches(word=word, possibilities=splitted, n=len(splitted), cutoff=thresh)
     
@@ -298,7 +291,6 @@ while True:
             if style == 'random':
                 current_word_index = random.randint(0, len(together[int(difficulty)-1])-1)
                 rawWord = together[int(difficulty)-1][current_word_index]
-                # rawWord = random.choice(together[int(difficulty)-1])
                 begin_index = 0
                 
             elif style == 'index':
@@ -359,13 +351,10 @@ while True:
             while not word_spelled:
                 
                 speak("Please spell " + withoutAccents.split('; ')[0])
-                # disabled below line.
-                # spellInput = input('Please spell ' + withoutAccents.split('; ')[0] + '\n')
-                # to replace with a more censored prompt...
                 spellInput = input("Type spelling: ")
                 spellInput = scrub_word_list([spellInput])[0]
                 
-                # if any(item in spellInput for item in word):
+                # check whether the user spelled the word correctly...
                 if spellInput in word:
                     print("Correctly Spelled!", rawWord)
                     print('--------')
@@ -402,7 +391,6 @@ while True:
                     phonetic = get_MW_phonetic_spelling(str(word[0]))
                     t = prepare_list_for_speech(phonetic)
                     print("Phonetic Spelling: " + t)
-                    # speak("Phonetic Spelling: " + t)
                     
                 elif spellInput in etymology_hotkeys:
                     etymology = get_MW_etymology(str(word[0]))
@@ -412,7 +400,6 @@ while True:
                     else:
                         censored = censor_sentence(word = str(word[0]), sentence = etymology[0])
                         print('Etymology: ' + censored)
-                        # speak("Etymology: " + etymology[0])
                         
                 elif spellInput in repeat_hotkeys:
                     # say the word again
@@ -460,17 +447,3 @@ while True:
             
         else:
             pass
-
-
-    
-
-
-
-
-
-
-
-    
-    
-        
-
