@@ -1,5 +1,5 @@
 # spelling_bee
-## **spelling_bee** is a full-featured, interactive spelling bee study tool coded in Python that can help users hone their spelling skills.  
+## **spelling_bee** is a full-featured, interactive spelling bee study tool coded in Python 
 Users can choose to study words from various difficulty levels and can use different study strategies.  
 
 
@@ -10,7 +10,7 @@ Users can choose to study words from various difficulty levels and can use diffe
 -   Artificial voice prompt supplies proper pronunciation
 
 ## Notes:
-This version of spelling_bee contains has been adapted for compiling this program as a standalone executable program using [PyInstaller](https://pyinstaller.readthedocs.io/en/stable/).  The [splash screen](docs/splash screen 1.0.1.png) and [icon](docs/bumblebee alpha v. 1.1.ico) are included in this repository also.
+This version of [spelling_bee](docs/) contains has been adapted for compiling this program as a standalone executable program using [PyInstaller](https://pyinstaller.readthedocs.io/en/stable/).  The [splash screen](docs/splash screen 1.0.1.png) and [icon](docs/bumblebee alpha v. 1.1.ico) are included in this repository also.
 
 ###Explaining the accompanying .CSV files
 	The Hive requires three .csv files to operate: 
@@ -20,10 +20,10 @@ This version of spelling_bee contains has been adapted for compiling this progra
 
 
 ### Using a different list of spelling words:
-	The author of this program developed it to use the 2022 Scripts Howard official list "Words of Champions." However, users may want to update the word list in future years.
+The author of this program developed it to use the 2022 Scripts Howard official list "Words of Champions." However, users may want to update the word list in future years.
 	
 1. Find the current list of spelling bee words ("Words of Champions") on the [Scripts Howard website](https://spellingbee.com/).
-2. Insert the words (copying and pasting en masse works well) according to their difficulty levels to the proper columns of the [Words_of_champions_2022.csv]([splash screen](docs/Words_of_champions_2022_devops))
+2. Insert the words (copying and pasting en masse works well) according to their difficulty levels to the proper columns of the [word list](docs/Words_of_champions_2022)
 3. Remove all asterisks ("*") and non-spelling words; separate alternate pronunciations (put in a single cell) by a semicolon and a space
 	-   e.g. honor; honour
 4. Ensure that the updated .csv file is still named "Words_of_champions_2022.csv" and that it is located in the same folder as The Hive executable
