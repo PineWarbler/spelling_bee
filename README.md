@@ -9,7 +9,7 @@
 -   Artificial voice prompt supplies proper pronunciation
 
 ## Notes:
-This version of [spelling_bee](/spelling_bee_main.py) contains has been adapted for compiling this program as a standalone executable program using [PyInstaller](https://pyinstaller.readthedocs.io/en/stable/).  The [splash screen](/splash screen 1.0.1.png) and [icon](/bumblebee alpha v. 1.1.ico) are included in this repository also.
+This version of [spelling_bee](/spelling_bee_main.py) contains has been adapted for compiling this program as a standalone executable program using [PyInstaller](https://pyinstaller.readthedocs.io/en/stable/).  The ![splash screen](/splash screen 1.0.1.png) and ![icon](/bumblebee alpha v. 1.1.ico) are included in this repository also.
 
 ### Explaining the accompanying .CSV files
 This program requires three .csv files to operate: 
@@ -24,7 +24,7 @@ The author of this program developed it to use the 2022 Scripts Howard official 
 1. Find the current list of spelling bee words ("Words of Champions") on the [Scripts Howard website](https://spellingbee.com/).
 2. Insert the words (copying and pasting en masse works well) according to their difficulty levels to the proper columns of the [word list](/Words_of_champions_2022)
 3. Remove all asterisks ("*") and non-spelling words; separate alternate pronunciations (put in a single cell) by a semicolon and a space
-	-   e.g. honor; honour
+	-   e.g. `honor; honour`
 4. Ensure that the updated .csv file is still named "Words_of_champions_2022.csv"
 
 ### Clearing user spelling history:
