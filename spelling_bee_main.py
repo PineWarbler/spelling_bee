@@ -2,31 +2,8 @@
 """
 Created on Mon Jan  3 10:04:49 2022
 
-@author: REYNOLDSPG21
+@author: Peter Reynolds
 """
-
-
-# must copy .csv files into same folder as exported executable
-
-
-# to access auto-py-to-exe, 
-# launch anaconda prompt as administrator, activate spellingBee environment
-# enter auto-py-to-exe
-
-# change split command... to current dirs
-# remove clear console command b/c doesn't work in regular terminal
-# change file addresses of word_stats and word files to be local addresses (in same file as executable)
-# modify `speak` function to temp save files to folder containing executable
-# disable print statements intended for debugging:
-    # like printing full word...
-# disable raising errors (like in record_mistake func) b/c executable crashes at raised errors
-
-
-
-# to access auto-py-to-exe, 
-# launch anaconda prompt as administrator, activate spellingBee environment
-# enter auto-py-to-exe
-
 
 # import library for managing the splash screen
 try:
