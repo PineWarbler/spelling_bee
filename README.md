@@ -13,7 +13,7 @@ This version of [spelling_bee](/spelling_bee_main.py) is optimized to be compile
 
 ### Explaining the accompanying .CSV files
 This program requires three .csv files to operate: 
--   [words_of_champions_2022.csv](/Words_of_champions_2022.csv) contains all spelling words, divided by columns into unique difficulty levels
+-   [Words_of_champions_2022.csv](/Words_of_champions_2022.csv) contains all spelling words, divided by columns into unique difficulty levels
 -   [word_stats_2022.csv](/word_stats_2022.csv) contains a list of words missed by the user
 -   [progress_history_2022.csv](/progress_history_2022.csv) contains the index of the most recent word which the user studied (for persistent session memory)
 
