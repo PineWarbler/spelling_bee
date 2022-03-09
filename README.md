@@ -4,7 +4,7 @@
 
 ## Features:
 -   Artificial voice prompt supplies proper pronunciation
--   -   Supplies, upon user request, a word's definition, etymology, part of speech, example usage sentence, and phonetic spelling--all sourced from the [Merriam Webster](https://www.merriam-webster.com/) dictionary (official dictionary of the Scripts Howard)
+-   Supplies, upon user request, a word's definition, etymology, part of speech, example usage sentence, and phonetic spelling--all sourced from the [Merriam Webster](https://www.merriam-webster.com/) dictionary (official dictionary of the Scripts Howard)
 -   Study words from a specified difficulty level using sequential studying starting at input word index, using previously missed words, or using randomly selected words
 -   Keeps track of words misspelled by the user; misspelled words can be reviewed later using the missed studying option
 
