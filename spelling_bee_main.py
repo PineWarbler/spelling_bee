@@ -21,7 +21,8 @@ import playsound
 import datetime
 import csv
 import time
-from colorama import Fore, Back, Style
+from colorama import just_fix_windows_console
+from print_colors_in_terminal import PrintAngry, PrintGreen, PrintYellow
 from configparser import ConfigParser  # this is for reading the .ini file containing user settings
 
 from get_word_info_functions import *
@@ -160,15 +161,20 @@ def censor_sentence(word, sentence):
 # read in user configuration settings from the .ini file
 config = ConfigParser()
 config.read('user_config.ini')
-splash_screen_visible_time = float(config.get('timing', 'splash_screen_visible_time'))
+
+splash_screen_visible_time = abs(config.getfloat('timing', 'splash_screen_visible_time'))
+maxDictationLength = abs(config.getint("Misc", "maxDictationLength"))
+useColor = config.getboolean("Misc", "use_colored_text")
+if useColor:
+    just_fix_windows_console()  # enables ANSI escape codes to work in the Windows terminal
 
 word_list_file = config.get("word_list_stuff", "word_list")
 mistakeHistory = config.get("aux_info_files", "mistakeHistory")
-progressHistory = config.get("aux_info_files", "progressHistory.csv")
+progressHistory = config.get("aux_info_files", "progressHistory")
 
-mistake_delay = float(config.get("timing", "mistake_delay"))
+mistake_delay = abs(config.getfloat("timing", "mistake_delay"))
 
-valid_difficulty_choices = [int(i) for i in config.get("word_list_stuff", "valid_difficulty_choices").split(", ")]
+valid_difficulty_choices = [1, 2, 3]
 
 SLEEP_TIME = 5  # Not to be changed by user; for returning to main menu on error
 
@@ -237,15 +243,15 @@ while True:
                 if int(difficulty) in valid_difficulty_choices:
                     valid_input = True
                 else:
-                    print("That is not an option. Please input a valid difficulty level.")
+                    PrintAngry("That is not an option. Please input a valid difficulty level.", useColor)
             except:
-                print("That is not an option. Please input a valid integer difficulty level.")
+                PrintAngry("That is not an option. Please input a valid integer difficulty level.", useColor)
 
         # get starting point
         valid_input = False
         while not valid_input:
             print("\n----- Study Options -----\n")
-            print(" Start sequential studying at word index                                 (enter an integer)\n",
+            print(" Start sequential studying at word index                                (enter an integer)\n",
                   "Start sequentially where you previously left off                        (enter `p` or `prev`)\n",
                   "Start random-order studying at random starting index                    (enter `r` or `random`)\n",
                   "Start studying missed words (all difficulties; from recent to older)    (enter `m` or `miss`)"
@@ -270,7 +276,7 @@ while True:
                     valid_input = True
                     style = 'index'
                 except:
-                    print(str(style_input) + " is not an option. Please input a valid integer or string.")
+                    printAngry(str(style_input) + " is not an option. Please input a valid integer or string.", useColor)
 
         index_counter = 0
         while True:
@@ -342,17 +348,17 @@ while True:
 
                 # check whether the user spelled the word correctly...
                 if spellInput in word:
-                    print("Correctly Spelled!", rawWord)
-                    print('--------')
+                    PrintGreen("Correctly Spelled! " + rawWord, useColor)
+                    PrintGreen('--------', useColor)
                     word_spelled = True
 
                 elif spellInput in definition_hotkeys:
                     definition = get_MW_definition(str(word[0]))
                     if definition == None:
-                        print("Definition: No definition found on the Merriam Webster website.  Sorry!")
+                        PrintYellow("Definition: No definition found on the Merriam Webster website.  Sorry!", useColor)
                     else:
                         censored = censor_sentence(word=str(word[0]), sentence=definition[0])
-                        print("Definition: " + censored)
+                        PrintYellow("Definition: " + censored, useColor)
                         speak("Definition: " + definition[0], maxDictationLength)
 
                 elif spellInput in usage_hotkeys:
@@ -362,7 +368,7 @@ while True:
                     else:
                         # censor out the word for printing...
                         censored = censor_sentence(word=str(word[0]), sentence=usage_example[0])
-                        print("Example Sentence: " + censored + '.')
+                        PrintYellow("Example Sentence: " + censored + '.', useColor)
                         speak("Example Sentence: " + usage_example[0], maxDictationLength)
 
                 elif spellInput in PoS_hotkeys:
@@ -370,22 +376,22 @@ while True:
 
                     t = prepare_list_for_speech(parts)
 
-                    print("Part(s) of Speech: " + t)  # only show first sentence
+                    PrintYellow("Part(s) of Speech: " + t, useColor)  # only show first sentence
                     speak("Parts of Speech: " + t, maxDictationLength)
 
                 elif spellInput in phonetic_symbol_hotkeys:
                     phonetic = get_MW_phonetic_spelling(str(word[0]))
                     t = prepare_list_for_speech(phonetic)
-                    print("Phonetic Spelling: " + t)
+                    PrintYellow("Phonetic Spelling: " + t)
 
                 elif spellInput in etymology_hotkeys:
                     etymology = get_MW_etymology(str(word[0]))
 
                     if etymology == None:
-                        print("No etymology found on the Merriam Webster website.  Sorry!")
+                        PrintYellow("No etymology found on the Merriam Webster website.  Sorry!", useColor)
                     else:
                         censored = censor_sentence(word=str(word[0]), sentence=etymology[0])
-                        print('Etymology: ' + censored)
+                        PrintYellow('Etymology: ' + censored, useColor)
 
                 elif spellInput in repeat_hotkeys:
                     # say the word again
@@ -404,9 +410,9 @@ while True:
                     print_spelling_menu()
 
                 else:
-                    print("Oops! Not quite.")
+                    PrintAngry("Oops! Not quite.", useColor)
                     time.sleep(mistake_delay)
-                    print("Correct:", rawWord)
+                    PrintAngry("Correct: " + rawWord, useColor)
                     print('--------')
 
                     time.sleep(mistake_delay)
