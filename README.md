@@ -22,7 +22,7 @@ This program requires three .csv files to operate:
 ### Using a different list of spelling words:
 The author of this program developed it to use the 2022 Scripts Howard official list "Words of Champions." However, users may want to update the word list in future years.
 	
-1. Find the current list of spelling bee words ("Words of Champions") on the [Scripts Howard website](https://spellingbee.com/).
+1. Find the current list of spelling bee words ("Words of Champions") on the [Scripps Howard website](https://spellingbee.com/).
 2. Insert the words (copying and pasting en masse works well) according to their difficulty levels to the proper columns of the [word list](/Words_of_champions_2022)
 3. Remove all asterisks ("*") and non-spelling words; separate alternate spellings of a single word (put in a single cell) by a semicolon and a space
 	-   e.g. `honor; honour`
