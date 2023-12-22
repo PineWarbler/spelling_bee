@@ -203,16 +203,16 @@ def get_MW_parts_of_speech(word):
 
 def get_MW_phonetic_spelling(word):
     """
-    webscrapes a word's parts of phonetic spelling(s) from the Merriam-Webster online dictionary (https://www.merriam-webster.com/) 
+    webscrapes a word's phonetic spelling from the Merriam-Webster online dictionary (https://www.merriam-webster.com/)
     
 
-      Input: word = search term for which to retrieve phonetic spelling(s)
+      Input: word = search term for which to retrieve phonetic spelling
       
-      Output: foundPartsofSpeech = list of all phonetic spelling(s) of requested word
+      Output: list of the word's phonetic spelling
 
     """
     from urllib.request import urlopen
-    import re
+    from bs4 import BeautifulSoup
 
     baseurl = "https://www.merriam-webster.com/dictionary/"
     url = baseurl+word
@@ -224,58 +224,9 @@ def get_MW_phonetic_spelling(word):
         return None
         
     html = page.read().decode("utf-8")
-    
-    beginFlag = r'<span class="pr"> '
-    closureFlag = "</span>"
-    foundStarts = [m.start() for m in re.finditer(beginFlag, html)]
-    
-    definition=[]
-    
-    for i in range(0, len(foundStarts)):
-        
-        particle = html[foundStarts[i]+len(beginFlag) : html.find(closureFlag, foundStarts[i])]  
-        particle = re.sub('<[^<]+?>', '', particle)
-        
-        definition.append(particle)
-    
-    # remove duplicates...
-    no_duplicates = list(set(definition))
-    return no_duplicates
 
+    soup = BeautifulSoup(html, "html.parser")
 
-'''
+    phoneticSpellings = soup.find("a", {"class":"play-pron-v2"})
 
-from miscFunctions import pprintTime
-import time
-start = time.time()
-
-definition = get_MW_definition('pearl')
-
-end = time.time()
-pprintTime(start, end)
-
-
-start = time.time()
-import threading
-# import time
-
-def trigger():
-   time.sleep(5000)
-# do somethi else here.
-
-thread = threading.Thread(target = trigger)
-thread.daemon = True
-thread.start()
-import math
-
-while True:
-    if math.floor((time.time() - start)%29) == 0: # because 30 seconds is maximum duration for Google Speech API
-        # end previous recognizer instance and start new one...
-        # have google process speech in background
-        print("New beginning")
-        def ask_google():
-            # do some long download here
-    print('.', end='')
-        
-''' 
-
+    return [phoneticSpellings.text.replace("\xa0", "")]
