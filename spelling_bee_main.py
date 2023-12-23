@@ -187,6 +187,8 @@ if hideTyping:
     if typingMask == '""':
         typingMask = ""
 
+useAuralFeedbackForMisspellings = config.getboolean("Misc", "auralFeedbackForMisspellings")
+
 word_list_file = config.get("word_list_stuff", "word_list")
 mistakeHistory = config.get("aux_info_files", "mistakeHistory")
 
@@ -450,6 +452,9 @@ while True:
                         PrintAngry("Oops! What you said: ", useColor)  # show the user what he inputted
                     else:
                         PrintAngry("Oops! Not quite.", useColor)  # don't need to repeat the user's input because his typing is visible
+
+                    if useAuralFeedbackForMisspellings:
+                        speak("The correct spelling is " + " ".join(rawWord.replace(";", " or ")), 1E9)
 
                     time.sleep(mistake_delay)
 
