@@ -4,6 +4,7 @@ Created on Mon Jan  3 10:04:49 2022
 
 @author: Peter Reynolds
 """
+import sys
 
 # import library for managing the splash screen
 try:
@@ -91,40 +92,49 @@ def record_mistake(filename, difficulty_level, word_index, correct_spelling, wro
         print(errorString)
 
 
-def read_left_off_place(filename, difficulty_level):
-    data = pd.read_csv(filename, header=None)
-    return data[1][int(difficulty_level) - 1]  # [column][row]
+def get_left_off_place(difficulty_level):
+    lastLeftOff = [int(i.strip()) for i in config.get("aux_info_files", "progressHistory").split(",")]
+    return lastLeftOff[difficulty_level - 1]
 
 
-def record_left_off_place(filename, difficulty_level, index):
-    data = pd.read_csv(filename, header=None)
-    array = data.to_numpy()
-    array[difficulty_level - 1][1] = int(index)  # set current index
+def record_left_off_place(difficulty_level, index):
+    config = ConfigParser(comment_prefixes=';', allow_no_value=True)  # these extra arguments allow comments to be
+    # preserved in the .ini file
+    config.read('user_config.ini')
 
+    s = [i.strip() for i in config.get("aux_info_files", "progressHistory").split(",")]
+    s[difficulty_level - 1] = str(index)
+    config.set('aux_info_files', 'progressHistory', ', '.join(s))
     try:
-        with open(filename, 'w', newline='') as csvfile:  # `w` because we'll overwrite the original data
-            # creating a csv writer object 
-            csvwriter = csv.writer(csvfile)
+        with open('user_config.ini', 'w') as configfile:  # save
+            config.write(configfile)
 
-            # writing the modified array rows
-            # csvwriter.writerow(header_row)
-            csvwriter.writerows(array)
     except PermissionError:
-        errorString = "Unable to load '" + filename + "'\nCheck that the above file is closed and that it exists on this machine."
-        print(errorString)
+        errorString = ("Unable to load 'user_config.ini' \nCheck that the above file is closed and that it exists on "
+                       "this machine.")
+        PrintAngry(errorString, useColor)
 
 
 def get_missed_indices(filename):
-    '''Returns a numpy array of indices of words misspelled (recent to past) '''
-    data = pd.read_csv(filename,
-                       encoding="ISO-8859-1")  # fancy encoding for the exotic markings sometimes encountered in the official word lists
+    """Returns a numpy array of indices of words misspelled (recent to past) """
+    try:
+        data = pd.read_csv(filename,
+                           encoding="ISO-8859-1")  # fancy encoding for the exotic markings sometimes encountered in the official word lists
+    except FileNotFoundError:
+        PrintAngry("Couldn't find the requested mistake history file: " + filename + " . Check the path chosen in the user_config file.",
+        useColor)
+        time.sleep(2)
+        PrintAngry("Exiting program now.", useColor)
+        time.sleep(2)
+        sys.exit()
+
     d = data.word_index.to_numpy()
     reversed_order = d[::-1]
     return reversed_order
 
 
 def censor_sentence(word, sentence):
-    '''
+    """
     censors a word from a given sentence using a dynamic matching threshold
     Parameters
     ----------
@@ -132,11 +142,11 @@ def censor_sentence(word, sentence):
         word to censor (it and its variants)
     sentence : str
         example sentence
-    
+
     Returns
         censored sentence (not containing word or its variants) as a str
 
-    '''
+    """
     from difflib import get_close_matches
     splitted = sentence.split(" ")  # create list containing each word
 
@@ -170,7 +180,9 @@ if useColor:
 
 word_list_file = config.get("word_list_stuff", "word_list")
 mistakeHistory = config.get("aux_info_files", "mistakeHistory")
-progressHistory = config.get("aux_info_files", "progressHistory")
+
+# read in the indices of the last word in each difficulty studied by the user
+lastLeftOffIndices = [int(i.strip()) for i in config.get("aux_info_files", "progressHistory").split(",")]
 
 mistake_delay = abs(config.getfloat("timing", "mistake_delay"))
 
@@ -178,7 +190,14 @@ valid_difficulty_choices = [1, 2, 3]
 
 SLEEP_TIME = 5  # Not to be changed by user; for returning to main menu on error
 
-data = pd.read_csv(word_list_file, encoding="ISO-8859-1", skiprows=0)
+try:
+    data = pd.read_csv(word_list_file, encoding="ISO-8859-1", skiprows=0)
+except FileNotFoundError:
+    PrintAngry("Couldn't find the requested word list file: " + word_list_file + " . Check the path chosen in the user_config file.", useColor)
+    time.sleep(2)
+    PrintAngry("Exiting program now.", useColor)
+    time.sleep(2)
+    sys.exit()
 
 repeat_hotkeys = ['a', 'again']
 definition_hotkeys = ['d', 'def']
@@ -213,12 +232,12 @@ three = np.array(data.three_bee[~pd.isnull(data.three_bee)])
 together = [one, two, three]
 
 # close the splash screen before running the main program
-if pyi_splash.is_alive():
-    # Close the splash screen. It does not matter when the call
-    # to this function is made, the splash screen remains open until
-    # this function is called or the Python program is terminated.
-    time.sleep(splash_screen_visible_time)  # don't want startlingly quick closing splash screen
-    pyi_splash.close()
+# if pyi_splash.is_alive():
+#     # Close the splash screen. It does not matter when the call
+#     # to this function is made, the splash screen remains open until
+#     # this function is called or the Python program is terminated.
+#     time.sleep(splash_screen_visible_time)  # don't want startlingly quick closing splash screen
+#     pyi_splash.close()
 
 print('Welcome to the Study Hive!\n=======================\n')
 print('© 2023 Peter Reynolds\n')
@@ -251,7 +270,7 @@ while True:
         valid_input = False
         while not valid_input:
             print("\n----- Study Options -----\n")
-            print(" Start sequential studying at word index                                (enter an integer)\n",
+            print(" Start sequential studying at word index                                 (enter an integer)\n",
                   "Start sequentially where you previously left off                        (enter `p` or `prev`)\n",
                   "Start random-order studying at random starting index                    (enter `r` or `random`)\n",
                   "Start studying missed words (all difficulties; from recent to older)    (enter `m` or `miss`)"
@@ -265,7 +284,7 @@ while True:
                 valid_input = True
                 style = 'previous'
                 # get the current progress state now before looping commences to minimize unnecessary .csv readings
-                previous_index = read_left_off_place(filename=progressHistory, difficulty_level=difficulty)
+                previous_index = get_left_off_place(difficulty_level=difficulty)
             elif style_input in ['m', 'miss']:
                 valid_input = True
                 style = 'miss'
@@ -276,7 +295,8 @@ while True:
                     valid_input = True
                     style = 'index'
                 except:
-                    printAngry(str(style_input) + " is not an option. Please input a valid integer or string.", useColor)
+                    printAngry(str(style_input) + " is not an option. Please input a valid integer or string.",
+                               useColor)
 
         index_counter = 0
         while True:
@@ -382,12 +402,12 @@ while True:
                 elif spellInput in phonetic_symbol_hotkeys:
                     phonetic = get_MW_phonetic_spelling(str(word[0]))
                     t = prepare_list_for_speech(phonetic)
-                    PrintYellow("Phonetic Spelling: " + t)
+                    PrintYellow("Phonetic Spelling: " + t, useColor)
 
                 elif spellInput in etymology_hotkeys:
                     etymology = get_MW_etymology(str(word[0]))
 
-                    if etymology == None:
+                    if etymology is None or len(etymology) == 0:
                         PrintYellow("No etymology found on the Merriam Webster website.  Sorry!", useColor)
                     else:
                         censored = censor_sentence(word=str(word[0]), sentence=etymology[0])
@@ -433,7 +453,7 @@ while True:
 
                 # record progress to progress.csv
                 if style not in ['random', 'miss']:
-                    record_left_off_place(progressHistory, int(difficulty), (begin_index + index_counter))
+                    record_left_off_place(int(difficulty), begin_index + index_counter)
 
             word_spelled = False
 
