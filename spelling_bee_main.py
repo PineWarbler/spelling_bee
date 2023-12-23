@@ -23,6 +23,7 @@ import datetime
 import csv
 import time
 from colorama import just_fix_windows_console
+import pwinput
 from print_colors_in_terminal import PrintAngry, PrintGreen, PrintYellow
 from configparser import ConfigParser  # this is for reading the .ini file containing user settings
 
@@ -121,8 +122,10 @@ def get_missed_indices(filename):
         data = pd.read_csv(filename,
                            encoding="ISO-8859-1")  # fancy encoding for the exotic markings sometimes encountered in the official word lists
     except FileNotFoundError:
-        PrintAngry("Couldn't find the requested mistake history file: " + filename + " . Check the path chosen in the user_config file.",
-        useColor)
+        PrintAngry(
+            "Couldn't find the requested mistake history file: " + filename + ". Check the path chosen in the "
+                                                                              "user_config file.",
+            useColor)
         time.sleep(2)
         PrintAngry("Exiting program now.", useColor)
         time.sleep(2)
@@ -178,6 +181,12 @@ useColor = config.getboolean("Misc", "use_colored_text")
 if useColor:
     just_fix_windows_console()  # enables ANSI escape codes to work in the Windows terminal
 
+hideTyping = config.getboolean("Misc", "hideTyping")
+if hideTyping:
+    typingMask = config.get("Misc", "typingMask")
+    if typingMask == '""':
+        typingMask = ""
+
 word_list_file = config.get("word_list_stuff", "word_list")
 mistakeHistory = config.get("aux_info_files", "mistakeHistory")
 
@@ -193,7 +202,9 @@ SLEEP_TIME = 5  # Not to be changed by user; for returning to main menu on error
 try:
     data = pd.read_csv(word_list_file, encoding="ISO-8859-1", skiprows=0)
 except FileNotFoundError:
-    PrintAngry("Couldn't find the requested word list file: " + word_list_file + " . Check the path chosen in the user_config file.", useColor)
+    PrintAngry(
+        "Couldn't find the requested word list file: " + word_list_file + " . Check the path chosen in the user_config file.",
+        useColor)
     time.sleep(2)
     PrintAngry("Exiting program now.", useColor)
     time.sleep(2)
@@ -232,12 +243,12 @@ three = np.array(data.three_bee[~pd.isnull(data.three_bee)])
 together = [one, two, three]
 
 # close the splash screen before running the main program
-# if pyi_splash.is_alive():
-#     # Close the splash screen. It does not matter when the call
-#     # to this function is made, the splash screen remains open until
-#     # this function is called or the Python program is terminated.
-#     time.sleep(splash_screen_visible_time)  # don't want startlingly quick closing splash screen
-#     pyi_splash.close()
+if pyi_splash.is_alive():
+    # Close the splash screen. It does not matter when the call
+    # to this function is made, the splash screen remains open until
+    # this function is called or the Python program is terminated.
+    time.sleep(splash_screen_visible_time)  # don't want startlingly quick closing splash screen
+    pyi_splash.close()
 
 print('Welcome to the Study Hive!\n=======================\n')
 print('© 2023 Peter Reynolds\n')
@@ -269,7 +280,7 @@ while True:
         # get starting point
         valid_input = False
         while not valid_input:
-            print("\n----- Study Options -----\n")
+            print("\n----- Study Options -----")
             print(" Start sequential studying at word index                                 (enter an integer)\n",
                   "Start sequentially where you previously left off                        (enter `p` or `prev`)\n",
                   "Start random-order studying at random starting index                    (enter `r` or `random`)\n",
@@ -363,7 +374,12 @@ while True:
             while not word_spelled:
 
                 speak("Please spell " + withoutAccents.split('; ')[0], maxDictationLength)
-                spellInput = input("Type spelling: ")
+
+                if hideTyping:
+                    spellInput = pwinput.pwinput(prompt="Type spelling: ", mask=typingMask)
+                else:
+                    spellInput = input("Type spelling: ")
+
                 spellInput = scrub_word_list([spellInput])[0]
 
                 # check whether the user spelled the word correctly...
@@ -430,8 +446,13 @@ while True:
                     print_spelling_menu()
 
                 else:
-                    PrintAngry("Oops! Not quite.", useColor)
+                    if hideTyping:
+                        PrintAngry("Oops! What you said: ", useColor)  # show the user what he inputted
+                    else:
+                        PrintAngry("Oops! Not quite.", useColor)  # don't need to repeat the user's input because his typing is visible
+
                     time.sleep(mistake_delay)
+
                     PrintAngry("Correct: " + rawWord, useColor)
                     print('--------')
 
