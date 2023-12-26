@@ -184,6 +184,9 @@ if useColor:
 hideTyping = config.getboolean("Misc", "hideTyping")
 if hideTyping:
     typingMask = config.get("Misc", "typingMask")
+    if len(typingMask) > 1:
+        PrintYellow("Warning: typingMask will be clipped to the first character", useColor)
+        typingMask = typingMask[0]
     if typingMask == '""':
         typingMask = ""
 
@@ -378,11 +381,11 @@ while True:
                 speak("Please spell " + withoutAccents.split('; ')[0], maxDictationLength)
 
                 if hideTyping:
-                    spellInput = pwinput.pwinput(prompt="Type spelling: ", mask=typingMask)
+                    rawSpellInput = pwinput.pwinput(prompt="Type spelling: ", mask=typingMask)
                 else:
-                    spellInput = input("Type spelling: ")
+                    rawSpellInput = input("Type spelling: ")
 
-                spellInput = scrub_word_list([spellInput])[0]
+                spellInput = scrub_word_list([rawSpellInput])[0]
 
                 # check whether the user spelled the word correctly...
                 if spellInput in word:
@@ -449,16 +452,18 @@ while True:
 
                 else:
                     if hideTyping:
-                        PrintAngry("Oops! What you said: ", useColor)  # show the user what he inputted
+                        PrintAngry("Oops! What you said: " + rawSpellInput, useColor)  # show the user what he inputted
                     else:
-                        PrintAngry("Oops! Not quite.", useColor)  # don't need to repeat the user's input because his typing is visible
+                        PrintAngry("Oops! Not quite.",
+                                   useColor)  # don't need to repeat the user's input because his typing is visible
+
+                    PrintAngry("Correct: " + rawWord, useColor)
 
                     if useAuralFeedbackForMisspellings:
                         speak("The correct spelling is " + " ".join(rawWord.replace(";", " or ")), 1E9)
 
                     time.sleep(mistake_delay)
 
-                    PrintAngry("Correct: " + rawWord, useColor)
                     print('--------')
 
                     time.sleep(mistake_delay)
