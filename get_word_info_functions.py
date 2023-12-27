@@ -215,18 +215,27 @@ def get_MW_phonetic_spelling(word):
     from bs4 import BeautifulSoup
 
     baseurl = "https://www.merriam-webster.com/dictionary/"
-    url = baseurl+word
-    
+    url = baseurl + word.replace(" ", "%20") # make the url safe
+
     try:
         page = urlopen(url)
     except:
         print("Unable to load webpage. Check internet connection and that requested word is spelled correctly.")
-        return None
-        
+        # return None
+
     html = page.read().decode("utf-8")
 
     soup = BeautifulSoup(html, "html.parser")
 
-    phoneticSpellings = soup.find("a", {"class":"play-pron-v2"})
+    # the Merriam-Webster dictionary has several different places in the html where it displays the phonetic spelling.
+    # check each if can't find
+
+    phoneticSpellings = soup.find("a", {"class": "play-pron-v2"})
+
+    if phoneticSpellings is None or len(phoneticSpellings) == 0:
+        # try another method
+        phoneticSpellings = soup.find("div", {"class": "prons-entry-list-item"})
+    if phoneticSpellings is None or len(phoneticSpellings) == 0:
+        return ["No phonetic spelling could be found on the Merriam Webster online dictionary website."]
 
     return [phoneticSpellings.text.replace("\xa0", "")]

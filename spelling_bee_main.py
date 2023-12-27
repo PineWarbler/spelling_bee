@@ -172,7 +172,7 @@ def censor_sentence(word, sentence):
 
 
 # read in user configuration settings from the .ini file
-config = ConfigParser()
+config = ConfigParser(comment_prefixes=';', allow_no_value=True)
 config.read('user_config.ini')
 
 splash_screen_visible_time = abs(config.getfloat('timing', 'splash_screen_visible_time'))
@@ -248,12 +248,12 @@ three = np.array(data.three_bee[~pd.isnull(data.three_bee)])
 together = [one, two, three]
 
 # close the splash screen before running the main program
-if pyi_splash.is_alive():
-    # Close the splash screen. It does not matter when the call
-    # to this function is made, the splash screen remains open until
-    # this function is called or the Python program is terminated.
-    time.sleep(splash_screen_visible_time)  # don't want startlingly quick closing splash screen
-    pyi_splash.close()
+# if pyi_splash.is_alive():
+#     # Close the splash screen. It does not matter when the call
+#     # to this function is made, the splash screen remains open until
+#     # this function is called or the Python program is terminated.
+#     time.sleep(splash_screen_visible_time)  # don't want startlingly quick closing splash screen
+#     pyi_splash.close()
 
 print('Welcome to the Study Hive!\n=======================\n')
 print('© 2023 Peter Reynolds\n')
@@ -300,7 +300,7 @@ while True:
                 valid_input = True
                 style = 'previous'
                 # get the current progress state now before looping commences to minimize unnecessary .csv readings
-                previous_index = get_left_off_place(difficulty_level=difficulty)
+                previous_index = get_left_off_place(difficulty_level=int(difficulty))
             elif style_input in ['m', 'miss']:
                 valid_input = True
                 style = 'miss'
