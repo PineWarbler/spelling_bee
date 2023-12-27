@@ -422,14 +422,17 @@ while True:
 
                 elif spellInput in phonetic_symbol_hotkeys:
                     phonetic = get_MW_phonetic_spelling(str(word[0]))
-                    t = prepare_list_for_speech(phonetic)
-                    PrintYellow("Phonetic Spelling: " + t, useColor)
+                    if phonetic is None:
+                        PrintYellow("No phonetic spelling could be found on the Merriam-Webster website.  Sorry!", useColor)
+                    else:
+                        t = prepare_list_for_speech(phonetic)
+                        PrintYellow("Phonetic Spelling: " + t, useColor)
 
                 elif spellInput in etymology_hotkeys:
                     etymology = get_MW_etymology(str(word[0]))
 
                     if etymology is None or len(etymology) == 0:
-                        PrintYellow("No etymology found on the Merriam Webster website.  Sorry!", useColor)
+                        PrintYellow("No etymology found on the Merriam-Webster website.  Sorry!", useColor)
                     else:
                         censored = censor_sentence(word=str(word[0]), sentence=etymology[0])
                         PrintYellow('Etymology: ' + censored, useColor)

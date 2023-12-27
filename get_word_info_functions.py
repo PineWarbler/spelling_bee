@@ -221,7 +221,7 @@ def get_MW_phonetic_spelling(word):
         page = urlopen(url)
     except:
         print("Unable to load webpage. Check internet connection and that requested word is spelled correctly.")
-        # return None
+        return None
 
     html = page.read().decode("utf-8")
 
@@ -236,6 +236,6 @@ def get_MW_phonetic_spelling(word):
         # try another method
         phoneticSpellings = soup.find("div", {"class": "prons-entry-list-item"})
     if phoneticSpellings is None or len(phoneticSpellings) == 0:
-        return ["No phonetic spelling could be found on the Merriam Webster online dictionary website."]
+        return None
 
     return [phoneticSpellings.text.replace("\xa0", "")]
