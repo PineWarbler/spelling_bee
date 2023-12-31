@@ -7,19 +7,22 @@ Created on Mon Jan  3 10:04:49 2022
 import sys
 
 # import library for managing the splash screen
-try:
-    import pyi_splash
-except:
-    pass
+# try:
+#     import pyi_splash
+# except:
+#     pass
 
 import unidecode
 import pandas as pd
 import numpy as np
 import random
 from gtts import gTTS
+import pyttsx3 # for offline audio dictation
 import os
-import playsound
 import datetime
+from io import BytesIO
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"  # this makes pygame load silently; see https://stackoverflow.com/a/55769463
+import pygame
 import csv
 import time
 from colorama import just_fix_windows_console
@@ -42,28 +45,59 @@ def scrub_word_list(word_list):
         newList[i] = newList[i].replace("'", '')  # remove apostrophes
     return word_list
 
-
-def speak(text,
-          maxDictationLength,
-          folder="",
-          filename="auto-discard_spelling_bee_audio.mp3"):
+def cropDictation(text, maxDictationLength):
+    # crops the text at the first `maxDictationLength` words
+    returnString = text
     splitted = text.split(" ")  # create list containing each word
     if len(splitted) > maxDictationLength:  # cap at maximum
-        splitted = splitted[0:maxDictationLength]
-        text = ' '.join(splitted)
-        text += '.............et cetera'  # the repeated ellipsis is for a pause
+        splitted = splitted[0:int(maxDictationLength)]
+        returnString = ' '.join(splitted)
+        returnString += '.............et cetera'  # the repeated ellipsis is for a pause
+    return returnString
+
+def speak_google(text, maxDictationLength):
+    # raises a ConnectionError if google text-to-speech server could not be reached
+    text = cropDictation(text, maxDictationLength)
 
     tts = gTTS(text=text, lang='en', tld='com')
 
-    path = folder + filename
+    # convert to file-like object
+    my_in_memory_byte_stream = BytesIO()
+    try:
+        tts.write_to_fp(my_in_memory_byte_stream)
+    except:
+        PrintAngry("Couldn't connect to Google Text to Speech online service.", useColor)
+        raise ConnectionError
 
-    if os.path.isfile(path):  # if the file already exists, erase it to avoid raising a Permission Error
-        os.remove(path)
+    my_in_memory_byte_stream.seek(0)
 
-    tts.save(path)
-    playsound.playsound(path, block=True)
-    os.remove(path)
+    pygame.init()  # see https://blog.furas.pl/python-how-to-play-mp3-from-gtts-as-bytes-without-saving-on-disk-gb.html
+    pygame.mixer.init()
+    pygame.mixer.music.load(my_in_memory_byte_stream)
+    pygame.mixer.music.play()
+    while pygame.mixer.music.get_busy():  # this allows the audio to finish playing
+        pygame.time.Clock().tick(10)
 
+def speak_offline(text, maxDictationLength):
+    text = cropDictation(text, maxDictationLength)
+
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 125)
+
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[1].id)  # 1 is for female voice on Windows
+    engine.say(text)
+    engine.runAndWait()
+
+def speak(text, preferGoogleTextToSpeech, maxDictationLength):
+    # handles the decision of which speech function to call
+    if preferGoogleTextToSpeech:
+        try:
+            speak_google(text, maxDictationLength)
+        except ConnectionError:
+            speak_offline(text, maxDictationLength)
+    else:
+        speak_offline(text, maxDictationLength)
 
 def prepare_list_for_speech(myList):
     # include commas and 'or' between possibilities...
@@ -191,6 +225,7 @@ if hideTyping:
         typingMask = ""
 
 useAuralFeedbackForMisspellings = config.getboolean("Misc", "auralFeedbackForMisspellings")
+preferGoogleTextToSpeech = config.getboolean("Misc", "preferGoogleTextToSpeech")
 
 word_list_file = config.get("word_list_stuff", "word_list")
 mistakeHistory = config.get("aux_info_files", "mistakeHistory")
@@ -255,9 +290,9 @@ together = [one, two, three]
 #     time.sleep(splash_screen_visible_time)  # don't want startlingly quick closing splash screen
 #     pyi_splash.close()
 
-print('Welcome to the Study Hive!\n=======================\n')
+print('Welcome to The Hive!\n=======================\n')
 print('© 2023 Peter Reynolds\n')
-print('Press CTRL + C to exit the program at any time.\n')
+# print('Press CTRL + C to exit the program at any time.\n')
 print("All spelling mistakes are logged in", mistakeHistory)
 
 reset_loop = True  # flag for catching if user reaches end of spelling list and must return to main menu
@@ -377,8 +412,7 @@ while True:
 
             word_spelled = False
             while not word_spelled:
-
-                speak("Please spell " + withoutAccents.split('; ')[0], maxDictationLength)
+                speak("Please spell " + withoutAccents.split('; ')[0], preferGoogleTextToSpeech, maxDictationLength)
 
                 if hideTyping:
                     rawSpellInput = pwinput.pwinput(prompt="Type spelling: ", mask=typingMask)
@@ -396,21 +430,21 @@ while True:
                 elif spellInput in definition_hotkeys:
                     definition = get_MW_definition(str(word[0]))
                     if definition == None:
-                        PrintYellow("Definition: No definition found on the Merriam Webster website.  Sorry!", useColor)
+                        PrintYellow("Definition: No definition found on the Merriam-Webster website.  Sorry!", useColor)
                     else:
                         censored = censor_sentence(word=str(word[0]), sentence=definition[0])
                         PrintYellow("Definition: " + censored, useColor)
-                        speak("Definition: " + definition[0], maxDictationLength)
+                        speak("Definition: " + definition[0], preferGoogleTextToSpeech, maxDictationLength)
 
                 elif spellInput in usage_hotkeys:
                     usage_example = get_MW_example_sentences(str(word[0]))
                     if usage_example == None:
-                        print("No example sentences found on the Merriam Webster website.  Sorry!")
+                        printYellow("No example sentences found on the Merriam-Webster website.", useColor)
                     else:
                         # censor out the word for printing...
                         censored = censor_sentence(word=str(word[0]), sentence=usage_example[0])
                         PrintYellow("Example Sentence: " + censored + '.', useColor)
-                        speak("Example Sentence: " + usage_example[0], maxDictationLength)
+                        speak("Example Sentence: " + usage_example[0], preferGoogleTextToSpeech, maxDictationLength)
 
                 elif spellInput in PoS_hotkeys:
                     parts = get_MW_parts_of_speech(str(word[0]))
@@ -418,12 +452,13 @@ while True:
                     t = prepare_list_for_speech(parts)
 
                     PrintYellow("Part(s) of Speech: " + t, useColor)  # only show first sentence
-                    speak("Parts of Speech: " + t, maxDictationLength)
+                    speak("Parts of Speech: " + t, preferGoogleTextToSpeech, maxDictationLength)
 
                 elif spellInput in phonetic_symbol_hotkeys:
                     phonetic = get_MW_phonetic_spelling(str(word[0]))
                     if phonetic is None:
-                        PrintYellow("No phonetic spelling could be found on the Merriam-Webster website.  Sorry!", useColor)
+                        PrintYellow("No phonetic spelling could be found on the Merriam-Webster website.  Sorry!",
+                                    useColor)
                     else:
                         t = prepare_list_for_speech(phonetic)
                         PrintYellow("Phonetic Spelling: " + t, useColor)
@@ -439,7 +474,7 @@ while True:
 
                 elif spellInput in repeat_hotkeys:
                     # say the word again
-                    speak(withoutAccents.split('; ')[0], maxDictationLength)
+                    speak(withoutAccents.split('; ')[0], preferGoogleTextToSpeech, maxDictationLength)
 
                 elif spellInput in [str(i) for i in valid_difficulty_choices]:
                     if int(spellInput) != difficulty:
@@ -463,7 +498,7 @@ while True:
                     PrintAngry("Correct: " + rawWord, useColor)
 
                     if useAuralFeedbackForMisspellings:
-                        speak("The correct spelling is " + " ".join(rawWord.replace(";", " or ")), 1E9)
+                        speak("The correct spelling is " + " ".join(rawWord.replace(";", " or ")), preferGoogleTextToSpeech, 1E9)
 
                     time.sleep(mistake_delay)
 
