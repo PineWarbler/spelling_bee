@@ -21,7 +21,7 @@ def get_MW_definition(word):
     try:
         page = urlopen(url)
     except:
-        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.")
+        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.", True)
         return None
         
     html = page.read().decode("utf-8")
@@ -68,7 +68,7 @@ def get_MW_etymology(word):
     try:
         page = urlopen(url)
     except:
-        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.")
+        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.", True)
         return None
         
     html = page.read().decode("utf-8")
@@ -117,7 +117,7 @@ def get_MW_example_sentences(word):
     try:
         page = urlopen(url)
     except:
-        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.")
+        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.", True)
         return None
         
     html = page.read().decode("utf-8")
@@ -179,7 +179,7 @@ def get_MW_parts_of_speech(word):
     try:
         page = urlopen(url)
     except:
-        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.")
+        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.", True)
         return None
         
     html = page.read().decode("utf-8")
@@ -223,7 +223,7 @@ def get_MW_phonetic_spelling(word):
     try:
         page = urlopen(url)
     except:
-        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.")
+        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.", True)
         return None
 
     html = page.read().decode("utf-8")

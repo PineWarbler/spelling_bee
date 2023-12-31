@@ -16,12 +16,14 @@ import unidecode
 import pandas as pd
 import numpy as np
 import random
-from gtts import gTTS
-import pyttsx3 # for offline audio dictation
+from gtts import gTTS, gTTSError
+import pyttsx3  # for offline audio dictation
 import os
 import datetime
 from io import BytesIO
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"  # this makes pygame load silently; see https://stackoverflow.com/a/55769463
+
+os.environ[
+    'PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"  # this makes pygame load silently; see https://stackoverflow.com/a/55769463
 import pygame
 import csv
 import time
@@ -31,6 +33,8 @@ from print_colors_in_terminal import PrintAngry, PrintGreen, PrintYellow
 from configparser import ConfigParser  # this is for reading the .ini file containing user settings
 
 from get_word_info_functions import *
+
+overrideToOfflineVoice = False  # once tripped, will default to offline voice
 
 
 def scrub_word_list(word_list):
@@ -45,6 +49,7 @@ def scrub_word_list(word_list):
         newList[i] = newList[i].replace("'", '')  # remove apostrophes
     return word_list
 
+
 def cropDictation(text, maxDictationLength):
     # crops the text at the first `maxDictationLength` words
     returnString = text
@@ -54,6 +59,7 @@ def cropDictation(text, maxDictationLength):
         returnString = ' '.join(splitted)
         returnString += '.............et cetera'  # the repeated ellipsis is for a pause
     return returnString
+
 
 def speak_google(text, maxDictationLength):
     # raises a ConnectionError if google text-to-speech server could not be reached
@@ -65,8 +71,7 @@ def speak_google(text, maxDictationLength):
     my_in_memory_byte_stream = BytesIO()
     try:
         tts.write_to_fp(my_in_memory_byte_stream)
-    except:
-        PrintAngry("Couldn't connect to Google Text to Speech online service.", useColor)
+    except gTTSError:
         raise ConnectionError
 
     my_in_memory_byte_stream.seek(0)
@@ -77,6 +82,7 @@ def speak_google(text, maxDictationLength):
     pygame.mixer.music.play()
     while pygame.mixer.music.get_busy():  # this allows the audio to finish playing
         pygame.time.Clock().tick(10)
+
 
 def speak_offline(text, maxDictationLength):
     text = cropDictation(text, maxDictationLength)
@@ -89,15 +95,21 @@ def speak_offline(text, maxDictationLength):
     engine.say(text)
     engine.runAndWait()
 
+
 def speak(text, preferGoogleTextToSpeech, maxDictationLength):
     # handles the decision of which speech function to call
     if preferGoogleTextToSpeech:
         try:
             speak_google(text, maxDictationLength)
         except ConnectionError:
+            global overrideToOfflineVoice
+            if not overrideToOfflineVoice:
+                PrintAngry("Couldn't connect to Google Text to Speech online service. Defaulting to offline voice.", useColor)
+            overrideToOfflineVoice = True
             speak_offline(text, maxDictationLength)
     else:
         speak_offline(text, maxDictationLength)
+
 
 def prepare_list_for_speech(myList):
     # include commas and 'or' between possibilities...
@@ -123,8 +135,8 @@ def record_mistake(filename, difficulty_level, word_index, correct_spelling, wro
             csvwriter.writerow(
                 [difficulty_level, word_index, correct_spelling, wrong_spelling, timestamp_formatted, timestamp_raw])
     except PermissionError:
-        errorString = "Unable to load '" + filename + "'\nCheck that the above file is closed and that it exists on this machine."
-        print(errorString)
+        errorString = "[WARNING] Unable to record your recent mistake in '" + filename + "'\nCheck that the above file is closed and that it exists on this machine."
+        PrintYellow(errorString, useColor)
 
 
 def get_left_off_place(difficulty_level):
@@ -150,8 +162,8 @@ def record_left_off_place(difficulty_level, index):
         PrintAngry(errorString, useColor)
 
 
-def get_missed_indices(filename):
-    """Returns a numpy array of indices of words misspelled (recent to past) """
+def get_missed_indices(filename, difficulty_level):
+    """Returns a numpy array of indices of words misspelled in the requested `difficulty_level` (recent to past) """
     try:
         data = pd.read_csv(filename,
                            encoding="ISO-8859-1")  # fancy encoding for the exotic markings sometimes encountered in the official word lists
@@ -165,8 +177,16 @@ def get_missed_indices(filename):
         time.sleep(2)
         sys.exit()
 
-    d = data.word_index.to_numpy()
-    reversed_order = d[::-1]
+    selectedData = data.loc[data['word_level'] == difficulty_level].to_numpy()
+
+    word_index_col_num = data.columns.get_loc("word_index")
+    results = []
+    for row in selectedData:
+        to_append = row[word_index_col_num]
+        if str(to_append).strip() != "":
+            results.append(to_append)
+
+    reversed_order = results[::-1]
     return reversed_order
 
 
@@ -309,8 +329,8 @@ while True:
             difficulty = input('Please enter a word difficulty level [1] [2] [3] : \n> ')
 
             try:
-                int(difficulty)
-                if int(difficulty) in valid_difficulty_choices:
+                difficulty = int(difficulty)
+                if difficulty in valid_difficulty_choices:
                     valid_input = True
                 else:
                     PrintAngry("That is not an option. Please input a valid difficulty level.", useColor)
@@ -339,7 +359,7 @@ while True:
             elif style_input in ['m', 'miss']:
                 valid_input = True
                 style = 'miss'
-                review_array = get_missed_indices(mistakeHistory)
+                review_array = get_missed_indices(mistakeHistory, difficulty)
             else:  # then input should be an integer as index
                 try:
                     int(style_input)
@@ -389,18 +409,17 @@ while True:
 
 
             elif style == 'miss':
-                try:
-                    rawWord = together[int(difficulty) - 1][review_array[index_counter]]
-                except:
+                if index_counter >= len(review_array):
                     # congratulate user on level completion and return to main menu
-                    exitString = '\nCongratulations! You have finished reviewing missed words. Program returning to menu in ' + str(
-                        SLEEP_TIME) + ' seconds...\n'
+                    exitString = '\nCongratulations! You have finished reviewing level ' + str(difficulty) + ' missed words. Program returning to menu in ' + str(SLEEP_TIME) + ' seconds...\n'
                     print(exitString)
                     time.sleep(SLEEP_TIME)
                     reset_loop = True
                     break
-
+                # loop to beginning of the list once we reach the end
                 current_word_index = review_array[index_counter]
+                rawWord = together[int(difficulty) - 1][current_word_index]
+
 
             index_counter += 1
 
@@ -429,8 +448,8 @@ while True:
 
                 elif spellInput in definition_hotkeys:
                     definition = get_MW_definition(str(word[0]))
-                    if definition == None:
-                        PrintYellow("Definition: No definition found on the Merriam-Webster website.  Sorry!", useColor)
+                    if definition is None:
+                        PrintYellow("Definition: No definition found on the Merriam-Webster website.", useColor)
                     else:
                         censored = censor_sentence(word=str(word[0]), sentence=definition[0])
                         PrintYellow("Definition: " + censored, useColor)
@@ -438,7 +457,7 @@ while True:
 
                 elif spellInput in usage_hotkeys:
                     usage_example = get_MW_example_sentences(str(word[0]))
-                    if usage_example == None:
+                    if usage_example is None:
                         printYellow("No example sentences found on the Merriam-Webster website.", useColor)
                     else:
                         # censor out the word for printing...
@@ -457,7 +476,7 @@ while True:
                 elif spellInput in phonetic_symbol_hotkeys:
                     phonetic = get_MW_phonetic_spelling(str(word[0]))
                     if phonetic is None:
-                        PrintYellow("No phonetic spelling could be found on the Merriam-Webster website.  Sorry!",
+                        PrintYellow("No phonetic spelling could be found on the Merriam-Webster website.",
                                     useColor)
                     else:
                         t = prepare_list_for_speech(phonetic)
@@ -467,7 +486,7 @@ while True:
                     etymology = get_MW_etymology(str(word[0]))
 
                     if etymology is None or len(etymology) == 0:
-                        PrintYellow("No etymology found on the Merriam-Webster website.  Sorry!", useColor)
+                        PrintYellow("No etymology found on the Merriam-Webster website.", useColor)
                     else:
                         censored = censor_sentence(word=str(word[0]), sentence=etymology[0])
                         PrintYellow('Etymology: ' + censored, useColor)
@@ -498,13 +517,14 @@ while True:
                     PrintAngry("Correct: " + rawWord, useColor)
 
                     if useAuralFeedbackForMisspellings:
-                        speak("The correct spelling is " + " ".join(rawWord.replace(";", " or ")), preferGoogleTextToSpeech, 1E9)
+                        speak("The correct spelling is " + " ".join(rawWord.replace(";", " or ")),
+                              preferGoogleTextToSpeech, 1E9)
 
-                    time.sleep(mistake_delay)
+                    time.sleep(mistake_delay/2)
 
                     print('--------')
 
-                    time.sleep(mistake_delay)
+                    time.sleep(mistake_delay/2)
 
                     word_spelled = True
 
@@ -522,7 +542,7 @@ while True:
 
                 # record progress to progress.csv
                 if style not in ['random', 'miss']:
-                    record_left_off_place(int(difficulty), begin_index + index_counter)
+                    record_left_off_place(difficulty, begin_index + index_counter)
 
             word_spelled = False
 
