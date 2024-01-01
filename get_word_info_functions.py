@@ -108,56 +108,33 @@ def get_MW_example_sentences(word):
 
     """
     from urllib.request import urlopen
-    import re
-    
-    
+    from bs4 import BeautifulSoup
+
+
     baseurl = "https://www.merriam-webster.com/dictionary/"
-    url = baseurl+word
-    
+    url = baseurl + word
+
     try:
         page = urlopen(url)
     except:
-        print_colors_in_terminal.PrintYellow("Unable to load webpage. Check internet connection and that requested word is spelled correctly.", True)
+        print("Unable to load webpage. Check internet connection and that requested word is spelled correctly.")
         return None
-        
+
     html = page.read().decode("utf-8")
-    
-    beginFlag = r'<div class="in-sentences">'
-    closureFlag = r"</div>"
-    foundStarts = [m.start() for m in re.finditer(beginFlag, html)]
-    
-    if foundStarts == []:
+    soup = BeautifulSoup(html, "html.parser")
+
+    concatenated = []
+    from_web = soup.find_all("span", class_="sub-content-thread ex-sent sents")
+
+    if from_web is not None and len(from_web) != 0:
+        for i in range(0, len(from_web)):
+            to_append = from_web[i].text.replace("<em>", "")
+            to_append = to_append.replace("</em>", "")
+            to_append = to_append.strip().split("\n")[0]  # end at end of sentence
+            concatenated.append(to_append.strip())
+        return concatenated
+    else:
         return None
-    try:
-        exampleSentences = html[foundStarts[0]+len(beginFlag) : html.find(closureFlag, foundStarts[0])]  
-    except IndexError: # some word pages do not have the regular example sentences, only some scraped from news sites
-        beginFlagFallback = r'<span class="t has-aq">'
-        closureFlagFallback = r'<span class="aq has-aq">'
-        foundStarts = [m.start() for m in re.finditer(beginFlagFallback, html)]
-        if foundStarts == []:
-            return None
-        exampleSentences = ''
-        for k in range(len(foundStarts)):
-            exampleSentences += (html[foundStarts[k]+len(beginFlagFallback) : html.find(closureFlagFallback, foundStarts[k])]) 
-    
-    exampleSentences = re.sub('<[^<]+?>', '', exampleSentences) # remove nested <..> tags
-    
-    if "Quotes-->" in exampleSentences or "Extra Examples-->" in exampleSentences:
-        exampleSentences = exampleSentences.replace("Quotes-->", '')
-        exampleSentences = exampleSentences.replace('Extra Examples-->', '')
-        
-    partsofSpeech = ['Noun', "Verb", 'Adjective', "Adverb", 'Preposition', "Pronoun", "Conjunction", "Interjection"]
-    for string in partsofSpeech:
-        if string in exampleSentences:
-            exampleSentences = exampleSentences.replace(string, '') # remove part of speech from before ex. sentences
-    
-    exampleSentences = exampleSentences.replace('\n', '') # remove newline breaks
-    
-    exampleSentences = re.sub(' +', ' ', exampleSentences) # remove double spaces
-
-    exampleSentences = exampleSentences.split('.') # separate sentences
-
-    return exampleSentences
 
 def get_MW_parts_of_speech(word):
     """

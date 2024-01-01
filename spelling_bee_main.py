@@ -96,12 +96,13 @@ def speak_offline(text, maxDictationLength):
     engine.runAndWait()
 
 
-def speak(text, preferGoogleTextToSpeech, overrideToOfflineVoice=False, maxDictationLength=20):
+def speak(text, preferGoogleTextToSpeech, maxDictationLength=20):
     # handles the decision of which speech function to call
     if preferGoogleTextToSpeech:
         try:
             speak_google(text, maxDictationLength)
         except ConnectionError:
+            global overrideToOfflineVoice
             if not overrideToOfflineVoice:
                 PrintAngry("Couldn't connect to Google Text to Speech online service. Defaulting to offline voice.", useColor)
             overrideToOfflineVoice = True
@@ -186,7 +187,7 @@ def get_missed_indices(filename, difficulty_level):
     for row in selectedData:
         to_append = row[word_index_col_num]
         if str(to_append).strip() != "":
-            results.append(to_append)
+            results.append(int(to_append))
 
     reversed_order = results[::-1]
     return reversed_order
@@ -433,7 +434,7 @@ while True:
 
             word_spelled = False
             while not word_spelled:
-                speak("Please spell " + withoutAccents.split('; ')[0], preferGoogleTextToSpeech, overrideToOfflineVoice, maxDictationLength)
+                speak("Please spell " + withoutAccents.split('; ')[0], preferGoogleTextToSpeech, maxDictationLength)
 
                 if hideTyping:
                     rawSpellInput = pwinput.pwinput(prompt="Type spelling: ", mask=typingMask)
@@ -455,7 +456,7 @@ while True:
                     else:
                         censored = censor_sentence(word=str(word[0]), sentence=definition[0])
                         PrintYellow("Definition: " + censored, useColor)
-                        speak("Definition: " + definition[0], preferGoogleTextToSpeech, overrideToOfflineVoice, maxDictationLength)
+                        speak("Definition: " + definition[0], preferGoogleTextToSpeech, maxDictationLength)
 
                 elif spellInput in usage_hotkeys:
                     usage_example = get_MW_example_sentences(str(word[0]))
@@ -465,7 +466,7 @@ while True:
                         # censor out the word for printing...
                         censored = censor_sentence(word=str(word[0]), sentence=usage_example[0])
                         PrintYellow("Example Sentence: " + censored + '.', useColor)
-                        speak("Example Sentence: " + usage_example[0], preferGoogleTextToSpeech, overrideToOfflineVoice, maxDictationLength)
+                        speak("Example Sentence: " + usage_example[0], preferGoogleTextToSpeech, maxDictationLength)
 
                 elif spellInput in PoS_hotkeys:
                     parts = get_MW_parts_of_speech(str(word[0]))
@@ -473,7 +474,7 @@ while True:
                     t = prepare_list_for_speech(parts)
 
                     PrintYellow("Part(s) of Speech: " + t, useColor)  # only show first sentence
-                    speak("Parts of Speech: " + t, preferGoogleTextToSpeech, overrideToOfflineVoice, maxDictationLength)
+                    speak("Parts of Speech: " + t, preferGoogleTextToSpeech, maxDictationLength)
 
                 elif spellInput in phonetic_symbol_hotkeys:
                     phonetic = get_MW_phonetic_spelling(str(word[0]))
@@ -495,7 +496,7 @@ while True:
 
                 elif spellInput in repeat_hotkeys:
                     # say the word again
-                    speak(withoutAccents.split('; ')[0], preferGoogleTextToSpeech, maxDictationLength)
+                    speak(withoutAccents.split('; ')[0], preferGoogleTextToSpeech)
 
                 elif spellInput in [str(i) for i in valid_difficulty_choices]:
                     if int(spellInput) != difficulty:
@@ -520,7 +521,7 @@ while True:
 
                     if useAuralFeedbackForMisspellings:
                         speak("The correct spelling is " + " ".join(rawWord.replace(";", " or ")),
-                              preferGoogleTextToSpeech, overrideToOfflineVoice,int(1E9))
+                              preferGoogleTextToSpeech, int(1E9))
 
                     time.sleep(mistake_delay/2)
 
