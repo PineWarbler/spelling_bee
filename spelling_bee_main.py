@@ -31,14 +31,15 @@ import pwinput
 from print_colors_in_terminal import PrintAngry, PrintGreen, PrintYellow
 from configparser import ConfigParser  # this is for reading the .ini file containing user settings
 
-from get_word_info_functions import *
+from get_word_assets import get_word_asset
 
+
+word_assets_downloaded = False  # global flag that indicates whether or not the user has saved word assets for offline use
 overrideToOfflineVoice = False  # once tripped, will default to offline voice
 
 
 def scrub_word_list(word_list):
     # clean up each word spelling...
-    newList = [None] * len(word_list)  # create empty list
     newList = word_list
     for i in range(len(word_list)):
         newList[i] = newList[i].lower()  # put in lowercase
@@ -253,6 +254,11 @@ preferGoogleTextToSpeech = config.getboolean("Misc", "preferGoogleTextToSpeech")
 word_list_file = config.get("word_list_stuff", "word_list")
 mistakeHistory = config.get("aux_info_files", "mistakeHistory")
 
+try:
+    downloaded_word_assets_path = config.get("aux_info_files", "downloaded_word_assets")
+except:
+    downloaded_word_assets_path = None
+
 # read in the indices of the last word in each difficulty studied by the user
 lastLeftOffIndices = [int(i.strip()) for i in config.get("aux_info_files", "progressHistory").split(",")]
 
@@ -450,26 +456,24 @@ while True:
                     word_spelled = True
 
                 elif spellInput in definition_hotkeys:
-                    definition = get_MW_definition(str(word[0]))
-                    if definition is None:
-                        PrintYellow("Definition: No definition found on the Merriam-Webster website.", useColor)
-                    else:
+                    definition = get_word_asset(str(word[0]), difficulty, current_word_index, "Definition")
+
+                    if definition is not None:
                         censored = censor_sentence(word=str(word[0]), sentence=definition[0])
                         PrintYellow("Definition: " + censored, useColor)
                         speak("Definition: " + definition[0], preferGoogleTextToSpeech, maxDictationLength)
 
                 elif spellInput in usage_hotkeys:
-                    usage_example = get_MW_example_sentences(str(word[0]))
-                    if usage_example is None:
-                        printYellow("No example sentences found on the Merriam-Webster website.", useColor)
-                    else:
+                    usage_example = get_word_asset(str(word[0]), difficulty, current_word_index, "Example_Sentence")
+
+                    if usage_example is not None:
                         # censor out the word for printing...
                         censored = censor_sentence(word=str(word[0]), sentence=usage_example[0])
                         PrintYellow("Example Sentence: " + censored + '.', useColor)
                         speak("Example Sentence: " + usage_example[0], preferGoogleTextToSpeech, maxDictationLength)
 
                 elif spellInput in PoS_hotkeys:
-                    parts = get_MW_parts_of_speech(str(word[0]))
+                    parts = get_word_asset(str(word[0]), difficulty, current_word_index, "Part_of_Speech")
 
                     t = prepare_list_for_speech(parts)
 
@@ -477,20 +481,16 @@ while True:
                     speak("Parts of Speech: " + t, preferGoogleTextToSpeech, maxDictationLength)
 
                 elif spellInput in phonetic_symbol_hotkeys:
-                    phonetic = get_MW_phonetic_spelling(str(word[0]))
-                    if phonetic is None:
-                        PrintYellow("No phonetic spelling could be found on the Merriam-Webster website.",
-                                    useColor)
-                    else:
+                    phonetic = get_word_asset(str(word[0]), difficulty, current_word_index, "Phonetic_Spelling")
+
+                    if phonetic is not None:
                         t = prepare_list_for_speech(phonetic)
                         PrintYellow("Phonetic Spelling: " + t, useColor)
 
                 elif spellInput in etymology_hotkeys:
-                    etymology = get_MW_etymology(str(word[0]))
+                    etymology = get_word_asset(str(word[0]), difficulty, current_word_index, "Etymology")
 
-                    if etymology is None or len(etymology) == 0:
-                        PrintYellow("No etymology found on the Merriam-Webster website.", useColor)
-                    else:
+                    if etymology is not None:
                         censored = censor_sentence(word=str(word[0]), sentence=etymology[0])
                         PrintYellow('Etymology: ' + censored, useColor)
 
@@ -520,7 +520,7 @@ while True:
                     PrintAngry("Correct: " + rawWord, useColor)
 
                     if useAuralFeedbackForMisspellings:
-                        speak("The correct spelling is " + " ".join(rawWord.replace(";", " or ")),
+                        speak("The correct spelling is " + "  ".join(rawWord.replace(";", " or ")),
                               preferGoogleTextToSpeech, int(1E9))
 
                     time.sleep(mistake_delay/2)
